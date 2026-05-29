@@ -5,12 +5,6 @@
 #include "G4EmStandardPhysics.hh"
 #include "G4DecayPhysics.hh"
 
-// NOTE: G4OpticalPhysics was removed from the include list.
-// Optical photon tracking is expensive and not needed for the
-// J-PET 3-gamma coincidence simulation at this stage.
-// Add it back (and register it in the constructor) only if you
-// want to simulate scintillation light propagation.
-
 class MyPhysicsList : public G4VModularPhysicsList
 {
 public:

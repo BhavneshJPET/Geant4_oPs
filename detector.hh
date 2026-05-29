@@ -18,11 +18,6 @@ public:
 
     // Called by GEANT4 for every step inside the sensitive volume
     virtual G4bool ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist);
-
-    // NOTE: G4MaterialPropertyVector* quEff was removed — it was declared
-    // but never initialized or used, which would cause a dangling pointer.
-    // Add it back with proper initialization if you later implement
-    // quantum efficiency weighting for optical photons.
 };
 
 #endif

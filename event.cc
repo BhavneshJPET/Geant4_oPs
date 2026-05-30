@@ -103,17 +103,7 @@ void MyEventAction::SetDecayPosition(G4double x, G4double y, G4double z)
 // ---------------------------------------------------------------------------
 // SMEARING
 // ---------------------------------------------------------------------------
-// Professor's values:
-//   sigma = 1 cm  in RADIAL direction  (6mm bar depth direction)
-//   sigma = 3 cm  in Z direction       (along bar, time resolution limit)
-//   NO smearing   in TANGENTIAL        (which bar fired is known)
-//
-// In lab frame:
-//   phi         = azimuthal angle of hit in XY plane
-//   radial_hat  = (cos phi, sin phi, 0)   → sigma = 1 cm
-//   z_hat       = (0, 0, 1)               → sigma = 3 cm
-//   tangential  = (-sin phi, cos phi, 0)  → no smear
-// ---------------------------------------------------------------------------
+
 G4ThreeVector MyEventAction::SmearHitPosition(const G4ThreeVector& truePos)
 {
     const G4double sigmaRadial = 1.0 * cm;

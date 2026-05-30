@@ -182,9 +182,7 @@ static G4double SafeAngleDeg(G4ThreeVector a, G4ThreeVector b)
 }
 
 // ---------------------------------------------------------------------------
-// Helper: fill trilateration + hit-angle histograms
-// Called from both the primary path and the fallback path
-// recoV must already have Z set from smeared true decay Z
+// fill trilateration + hit-angle histograms
 // ---------------------------------------------------------------------------
 void MyEventAction::FillRecoHistograms(const G4ThreeVector& recoV,
                                         G4int eventID,
@@ -342,15 +340,6 @@ void MyEventAction::EndOfEventAction(const G4Event* event)
 
     // ---------------------------------------------------------------
     // STEP 2 — TRILATERATION using SMEARED positions
-    //
-    // Z FIX: Trilateration cannot reconstruct Z when beam is along Z
-    // because all 3 gammas travel mostly in XY plane and their hit
-    // times carry no independent Z information.
-    //
-    // Solution: Z is taken as smeared true decay Z (sigma=3cm)
-    // This simulates the real J-PET Z measurement which uses the
-    // time difference of signals at the two ends of each bar —
-    // a separate measurement from the trilateration between bars.
     // ---------------------------------------------------------------
     if(fGammaHitSet[0] && fGammaHitSet[1] && fGammaHitSet[2])
     {
@@ -365,7 +354,7 @@ void MyEventAction::EndOfEventAction(const G4Event* event)
     else if(fGammaCount == 3 && fDecayDetected)
     {
         // Fallback: project gammas to virtual cylinder
-        G4double virtualRadius = 42.5 * cm;
+        G4double virtualRadius = 38.5 * cm;
         const G4double c = c_light;
         G4bool validFallback = true;
 

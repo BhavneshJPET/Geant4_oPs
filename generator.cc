@@ -9,11 +9,11 @@
 MyPrimaryGenerator::MyPrimaryGenerator()
     //----------------------------------------------------------
     // O-PS BEAM — Modular J-PET configuration
-    // Beam starts at z = -25.2 cm (252 mm from center)
+    // Beam starts at z = 0.0 cm (center)
     // Travels in +Z direction, decays inside the detector ring
     //----------------------------------------------------------
-    : fBeamStartZ      (-25.2 * cm),   // ✅ UPDATED: was -30.0 cm
-      fBeamEnergy      (100.0 * eV),   // kinetic energy
+    : fBeamStartZ      (0.0 * cm),     // ✅ UPDATED: moved to center
+      fBeamEnergy      (1.0 * eV),     // kinetic energy lowered to keep decay inside
       fEnergySpread    (0.05),         // 5% energy resolution
       fAngularDivergence(5.0 * mrad),  // pore collimation
       fBeamSigma       (0.5  * mm)     // transverse beam size
@@ -83,4 +83,9 @@ void MyPrimaryGenerator::GeneratePrimaries(G4Event* anEvent)
     fParticleGun->SetParticlePosition(opsPos);
     fParticleGun->SetParticleMomentumDirection(opsDir);
     fParticleGun->GeneratePrimaryVertex(anEvent);
+
+    G4int eventID = anEvent->GetEventID();
+    if (eventID % 100000 == 0) {
+        G4cout << "Event: " << eventID << G4endl;
+    }
 }

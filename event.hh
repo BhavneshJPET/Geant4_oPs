@@ -8,6 +8,7 @@
 #include "G4ThreeVector.hh"
 #include <vector>
 #include <algorithm>
+#include <map>
 
 class MyRunAction;
 
@@ -33,6 +34,14 @@ public:
     void SetDecayZ       (G4double z) { fDecayZ        = z; }
     void SetDecayDetected(G4bool   b) { fDecayDetected = b; }
 
+    void SetGammaIndex(G4int trackID, G4int gammaIdx) { fTrackToGammaIdx[trackID] = gammaIdx; }
+    G4int GetGammaIndex(G4int trackID) {
+        auto it = fTrackToGammaIdx.find(trackID);
+        if (it != fTrackToGammaIdx.end()) return it->second;
+        return -1;
+    }
+    void ClearGammaIndexMap() { fTrackToGammaIdx.clear(); }
+
     G4int    GetGammaCount()    const { return fGammaCount;    }
     G4double GetTotalEnergy()   const { return fTotalEnergy;   }
     G4double GetDecayX()        const { return fDecayX;        }
@@ -50,16 +59,14 @@ public:
     static const G4int kNumModules = 513;
 
 private:
-    // ── Smearing ─────────────────────────────────────────────────
-    // sigma_radial = 1 cm (6mm bar depth direction)
-    // sigma_Z      = 3 cm (along bar, time resolution)
-    // no tangential smearing (bar identity known from electronics)
-    G4ThreeVector SmearHitPosition(const G4ThreeVector& truePos);
+    void SmearHit(G4ThreeVector& smearedPos, G4double& smearedTime,
+                  const G4ThreeVector& truePos, G4double trueTime);
 
     // ── Helper: fill H1(15-21) and H2(7-9) after trilateration ───
     void FillRecoHistograms(const G4ThreeVector& recoV,
                              G4int eventID,
-                             G4AnalysisManager* man);
+                             G4AnalysisManager* man,
+                             G4bool isTrue);
 
     // ── Scintillator arrays ───────────────────────────────────────
     std::vector<G4double> fEdepScin;
@@ -92,7 +99,7 @@ private:
     G4bool        fGammaHitSet[3];
 
     G4int         fGammaHitsRecorded;
+    std::map<G4int, G4int> fTrackToGammaIdx;
 };
 
 #endif
-

@@ -35,6 +35,89 @@ G4bool MySensitiveDetector::ProcessHits(
     // ---------------------------------------------------------------
     G4double      hitTime = aStep->GetPreStepPoint()
                                  ->GetGlobalTime();
+    G4ThreeVector hitPos  = aStep->GetPreStepPoint()
+                                 ->GetPosition();
+
+    // ---------------------------------------------------------------
+    // 4. Get track info
+    // ---------------------------------------------------------------
+    G4Track* track = aStep->GetTrack();
+
+    // ---------------------------------------------------------------
+    // 5. Get EventAction
+    // ---------------------------------------------------------------
+    MyEventAction* eventAction =
+        static_cast<MyEventAction*>(
+            const_cast<G4UserEventAction*>(
+                G4RunManager::GetRunManager()
+                    ->GetUserEventAction()));
+
+    // ---------------------------------------------------------------
+    // 6. Forward data to EventAction
+    // ---------------------------------------------------------------
+    if(eventAction)
+    {
+        // Always record energy deposit and time
+        eventAction->AddEdep(barID, edep, hitTime);
+        eventAction->AddHitPosition(hitPos);
+
+        // -----------------------------------------------------------
+        // SET GAMMA HIT POSITION AND TIME
+        //
+        // Identify which decay gamma (0, 1, or 2) caused the hit.
+        // Retrieve the index using the ancestor mapping tracking map.
+        // -----------------------------------------------------------
+        G4int gammaIdx = eventAction->GetGammaIndex(track->GetTrackID());
+
+        if(gammaIdx >= 0 && gammaIdx < 3)
+        {
+            // Set hit position for this gamma (first hit only)
+            eventAction->SetGammaHit(gammaIdx, hitPos);
+
+            // Set hit time for this gamma (earliest time wins)
+            eventAction->SetGammaHitTime(gammaIdx, hitTime);
+        }
+    }
+
+    return true;
+}
+#include "detector.hh"
+#include "event.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4RunManager.hh"
+#include "G4VTouchable.hh"
+#include "G4Track.hh"
+#include "G4Step.hh"
+
+MySensitiveDetector::MySensitiveDetector(G4String name)
+    : G4VSensitiveDetector(name)
+{
+    collectionName.insert("JPETHits");
+}
+
+MySensitiveDetector::~MySensitiveDetector() {}
+
+G4bool MySensitiveDetector::ProcessHits(
+    G4Step* aStep, G4TouchableHistory*)
+{
+    // ---------------------------------------------------------------
+    // 1. Only record steps with energy deposit
+    // ---------------------------------------------------------------
+    G4double edep = aStep->GetTotalEnergyDeposit();
+    if(edep <= 0.) return false;
+
+    // ---------------------------------------------------------------
+    // 2. Bar ID (copy number 201-512)
+    // ---------------------------------------------------------------
+    const G4VTouchable* touchable =
+        aStep->GetPreStepPoint()->GetTouchable();
+    G4int barID = touchable->GetCopyNumber();
+
+    // ---------------------------------------------------------------
+    // 3. Hit time and position
+    // ---------------------------------------------------------------
+    G4double      hitTime = aStep->GetPreStepPoint()
+                                 ->GetGlobalTime();
     G4ThreeVector hitPos  = aStep->GetPostStepPoint()
                                  ->GetPosition();
 

@@ -2,19 +2,30 @@
 #include "G4AnalysisManager.hh"
 #include "G4SystemOfUnits.hh"
 
-MyRunAction::MyRunAction()
-    : G4UserRunAction()
+MyRunAction::MyRunAction(G4String filename)
+    : G4UserRunAction(), fFilename(filename), fTotalEvents(0), fTotal3GammaEvents(0), fTotalEnergySum(0.0), fDecayXSum(0.0), fTrueCoincidences(0)
 {
     G4AnalysisManager* man = G4AnalysisManager::Instance();
     man->SetDefaultFileType("root");
+    man->SetNtupleMerging(true);
+
+    G4AccumulableManager* accumulableManager = G4AccumulableManager::Instance();
+    accumulableManager->RegisterAccumulable(fTotalEvents);
+    accumulableManager->RegisterAccumulable(fTotal3GammaEvents);
+    accumulableManager->RegisterAccumulable(fTotalEnergySum);
+    accumulableManager->RegisterAccumulable(fDecayXSum);
+    accumulableManager->RegisterAccumulable(fTrueCoincidences);
 }
 
 MyRunAction::~MyRunAction() {}
 
 void MyRunAction::BeginOfRunAction(const G4Run* run)
 {
+    G4AccumulableManager* accumulableManager = G4AccumulableManager::Instance();
+    accumulableManager->Reset();
+
     G4AnalysisManager* man = G4AnalysisManager::Instance();
-    man->OpenFile("output_142ns.root");
+    man->OpenFile(fFilename);
 
     // ───────────────────────────────────────────────────────────────
     // H1 Histograms (0-21)
@@ -46,6 +57,12 @@ void MyRunAction::BeginOfRunAction(const G4Run* run)
     man->CreateH1("fHitAngle_b", "Middle Hit Angle theta_b (deg)", 180, 0., 180.);           // 20
     man->CreateH1("fHitAngle_c", "Largest Hit Angle theta_c (deg)", 180, 0., 180.);          // 21
 
+    // True Reco Histograms (True Detector Hits Only)
+    man->CreateH1("fRecoVertexX_True", "True Reco Vertex X (cm)", 100, -5., 5.);             // 22
+    man->CreateH1("fRecoVertexY_True", "True Reco Vertex Y (cm)", 100, -5., 5.);             // 23
+    man->CreateH1("fRecoVertexZ_True", "True Reco Vertex Z (cm)", 120, -30., 30.);            // 24
+    man->CreateH1("fVertexResolution_True", "True Vertex Resolution |RecoV - TrueV| (cm)", 100, 0., 15.);// 25
+
     // ───────────────────────────────────────────────────────────────
     // H2 Histograms (0-9)
     // ───────────────────────────────────────────────────────────────
@@ -66,6 +83,16 @@ void MyRunAction::BeginOfRunAction(const G4Run* run)
     
     // Smeared Reconstructed Kinematic Dalitz
     man->CreateH2("fHitAngle", "Reconstructed Hit Angle Dalitz: X=a+b, Y=b-a (deg)", 240, 0., 240., 200, 0., 200.); // 9                                                // 9
+
+    // True Reco Histograms (True Detector Hits Only)
+    man->CreateH2("fRecoVertex_XY_True", "True Reconstructed Vertex X-Y (cm)", 100, -5., 5., 100, -5., 5.);       // 10
+    man->CreateH2("fRecoVertex_XZ_True", "True Reconstructed Vertex X-Z (cm)", 100, -5., 5., 120, -30., 30.);     // 11
+    man->CreateH2("fHitAngle_True", "True Reconstructed Hit Angle Dalitz: X=a+b, Y=b-a (deg)", 240, 0., 240., 200, 0., 200.); // 12
+
+    // ───────────────────────────────────────────────────────────────
+    // H3 Histograms (0)
+    // ───────────────────────────────────────────────────────────────
+    man->CreateH3("fHitMap_XYZ", "3D Hit Map X-Y-Z (cm)", 90, -45., 45., 90, -45., 45., 60, -30., 30.); // 0
 
     // ---------------------------------------------------------------
     // Ntuples
@@ -96,6 +123,31 @@ void MyRunAction::EndOfRunAction(const G4Run* run)
     G4AnalysisManager* man = G4AnalysisManager::Instance();
     man->Write();
     man->CloseFile();
+
+    G4AccumulableManager* accumulableManager = G4AccumulableManager::Instance();
+    accumulableManager->Merge();
+
+    if (IsMaster()) {
+        G4int runID = run->GetRunID();
+        
+        G4cout << "\n================= Run " << runID << " Summary =================" << G4endl;
+        G4cout << "  Total Events Generated         : " << fTotalEvents.GetValue() << G4endl;
+        G4cout << "  Events with 3 Gammas           : " << fTotal3GammaEvents.GetValue() << G4endl;
+        G4cout << "  Events with True Coincidences  : " << fTrueCoincidences.GetValue() << G4endl;
+        if (fTotal3GammaEvents.GetValue() > 0) {
+            G4double efficiency = (G4double)fTrueCoincidences.GetValue() / fTotal3GammaEvents.GetValue() * 100.0;
+            G4cout << "  True Coincidence Efficiency   : " << efficiency << " %" << G4endl;
+        }
+        G4cout << "=================================================\n" << G4endl;
+    }
 }
 
-void MyRunAction::AddEventData(G4int, G4double, G4double) {}
+void MyRunAction::AddEventData(G4int gammaCount, G4double totalEnergy, G4double decayZ)
+{
+    fTotalEvents += 1;
+    if (gammaCount == 3) {
+        fTotal3GammaEvents += 1;
+        fTotalEnergySum += totalEnergy;
+        fDecayXSum += decayZ;
+    }
+}

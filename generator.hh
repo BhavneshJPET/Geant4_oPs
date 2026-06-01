@@ -39,5 +39,4 @@ private:
     G4double fAngularDivergence; // cone half-angle = 5 mrad
     G4double fBeamSigma;         // transverse spread = 0.5 mm
 };
-
 #endif

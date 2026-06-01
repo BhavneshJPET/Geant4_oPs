@@ -9,7 +9,7 @@
 class MyActionInitialization : public G4VUserActionInitialization
 {
 public: 
-    MyActionInitialization();
+    MyActionInitialization(G4String filename);
     ~MyActionInitialization();
     
     virtual void BuildForMaster() const;
@@ -19,6 +19,7 @@ public:
     MyPrimaryGenerator* GetGenerator() const { return fGenerator; }
 
 private:
+    G4String fFilename;
     // ← ADD THIS: mutable so Build() can set it even though Build() is const
     mutable MyPrimaryGenerator* fGenerator;
 };

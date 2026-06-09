@@ -12,7 +12,7 @@ MyPrimaryGenerator::MyPrimaryGenerator()
     // Beam starts at z = 0.0 cm (center)
     // Travels in +Z direction, decays inside the detector ring
     //----------------------------------------------------------
-    : fBeamStartZ      (0.0 * cm),     // ✅ UPDATED: moved to center
+    : fBeamStartZ      (-25.2 * cm),   
       fBeamEnergy      (1.0 * eV),     // kinetic energy lowered to keep decay inside
       fEnergySpread    (0.05),         // 5% energy resolution
       fAngularDivergence(5.0 * mrad),  // pore collimation

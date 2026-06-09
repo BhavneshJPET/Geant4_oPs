@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
   // SCAN MODE: ./sim scan
   // --------------------------------------------------
   if (!ui && argc > 1 && G4String(argv[1]) == "scan") {
-    // ❌ REMOVED: generator->SetBeamMode(BeamMode::BEAM);
+    
     // BEAM is now the only mode — no need to set it
 
     std::vector<G4double> scanEnergies = {

@@ -1,4 +1,4 @@
-#include "Construction.hh"
+#include "construction.hh"
 #include "detector.hh"
 #include "G4SDManager.hh"
 #include "G4RotationMatrix.hh"
@@ -128,3 +128,4 @@ void MyDetectorConstruction::ConstructSDandField()
     if(fScintLogical)
         fScintLogical->SetSensitiveDetector(scintSD);
 }
+

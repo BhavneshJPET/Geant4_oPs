@@ -24,3 +24,4 @@ private:
     mutable MyPrimaryGenerator* fGenerator;
 };
 #endif
+

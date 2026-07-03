@@ -6,18 +6,50 @@
 #include "G4TouchableHistory.hh"
 #include "G4SystemOfUnits.hh"
 
-// Forward declaration — avoids pulling in all of event.hh here
-// (event.hh is included in detector.cc where it is actually needed)
 class MyEventAction;
 
+// ---------------------------------------------------------------
+// 1. Scintillator SD (J-PET Bars)
+// ---------------------------------------------------------------
 class MySensitiveDetector : public G4VSensitiveDetector
 {
 public:
     explicit MySensitiveDetector(G4String name);
-    ~MySensitiveDetector();
+    virtual ~MySensitiveDetector() override; 
+    virtual G4bool ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist) override;
+};
 
-    // Called by GEANT4 for every step inside the sensitive volume
-    virtual G4bool ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist);
+// ---------------------------------------------------------------
+// 2. Al Absorber SD
+// ---------------------------------------------------------------
+class MyAlAbsorberSD : public G4VSensitiveDetector
+{
+public:
+    explicit MyAlAbsorberSD(G4String name);
+    virtual ~MyAlAbsorberSD() override; 
+    virtual G4bool ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist) override;
+};
+
+// ---------------------------------------------------------------
+// 3. Grating Walls SD (Silicon Masks)
+// ---------------------------------------------------------------
+class MyGratingSD : public G4VSensitiveDetector
+{
+public:
+    explicit MyGratingSD(G4String name);
+    virtual ~MyGratingSD() override;
+    virtual G4bool ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist) override;
+};
+
+// ---------------------------------------------------------------
+// 4. Solid Counter SD (Stopper/Screen Plane)
+// ---------------------------------------------------------------
+class MyCounterSD : public G4VSensitiveDetector
+{
+public:
+    explicit MyCounterSD(G4String name);
+    virtual ~MyCounterSD() override;
+    virtual G4bool ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist) override;
 };
 
 #endif
